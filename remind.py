@@ -20,7 +20,7 @@ EVENTS = [
 # За сколько минут до начала напоминать (0 = в момент начала).
 LEADS_MIN = [240, 120, 60, 15]
 
-# Кого пинговать: "" — никого, "@here" или "@everyone".
+# Кого пинговать: "" — никого, "@here", "@everyone" или роль "<@&ID_роли>".
 MENTION = "@everyone"
 # На каких напоминаниях пинговать (минуты из LEADS_MIN). Например [15] — только за 15 минут.
 MENTION_AT = [240, 120, 60, 15]
@@ -69,7 +69,13 @@ def send(text):
         print("[DRY RUN]", text)
         return
     url = os.environ["DISCORD_WEBHOOK"]
-    r = requests.post(url, json={"content": text, "username": "RoK Reminder"}, timeout=20)
+    payload = {
+        "content": text,
+        "username": "RoK Reminder",
+        # Явно разрешаем пинг ролей и @everyone/@here.
+        "allowed_mentions": {"parse": ["roles", "everyone", "users"]},
+    }
+    r = requests.post(url, json=payload, timeout=20)
     r.raise_for_status()
 
 
@@ -86,6 +92,8 @@ def main():
             t = next(occurrences(ev, now, horizon))
             ts = int(t.timestamp())
             lines.append(f"{ev['emoji']} **{ev['name']}** — <t:{ts}:F> (<t:{ts}:R>)")
+        if MENTION:
+            lines.append(f"Ping test: {MENTION}")
         send("\n".join(lines))
         return
 
