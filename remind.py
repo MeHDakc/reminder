@@ -21,7 +21,9 @@ EVENTS = [
 LEADS_MIN = [240, 120, 60, 15]
 
 # Кого пинговать: "" — никого, "@here" или "@everyone".
-MENTION = ""
+MENTION = "@everyone"
+# На каких напоминаниях пинговать (минуты из LEADS_MIN). Например [15] — только за 15 минут.
+MENTION_AT = [240, 120, 60, 15]
 
 # Текст сообщения. <t:...:R> и <t:...:t> Discord покажет каждому в его часовом поясе.
 TEMPLATE = "{emoji} **{name}** starts <t:{ts}:R> (at <t:{ts}:t>) {mention}"
@@ -103,8 +105,9 @@ def main():
                 continue
             # Если запуск опоздал и созрело сразу несколько — шлём одно, самое свежее.
             ts = int(t.timestamp())
+            mention = MENTION if min(pending) in MENTION_AT else ""
             text = TEMPLATE.format(emoji=ev["emoji"], name=ev["name"], ts=ts,
-                                   mention=MENTION).strip()
+                                   mention=mention).strip()
             send(text)
             for lead in due:
                 sent[keys[lead]] = now.isoformat()
