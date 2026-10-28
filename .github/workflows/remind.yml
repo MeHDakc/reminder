@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: "*/10 * * * *"   # каждые 10 минут (UTC)
   workflow_dispatch:          # кнопка ручного запуска
+    inputs:
+      test:
+        description: "Отправить тестовое сообщение прямо сейчас"
+        type: boolean
+        default: true
 
 permissions:
   contents: write
@@ -22,9 +27,11 @@ jobs:
       - run: python remind.py
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          TEST: ${{ inputs.test }}
       - name: Save sent list
         run: |
           git config user.name "reminder-bot"
           git config user.email "reminder-bot@users.noreply.github.com"
+          touch sent.json
           git add sent.json
           git diff --cached --quiet || (git commit -m "reminders sent" && git push)
