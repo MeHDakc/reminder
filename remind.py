@@ -76,6 +76,17 @@ def main():
     if os.environ.get("NOW"):  # для теста: NOW="2026-10-29 06:10"
         now = parse_utc(os.environ["NOW"])
 
+    if os.environ.get("TEST") == "true":
+        # Тестовое сообщение: показывает ближайшее начало каждого события.
+        lines = ["✅ Test: reminders are working. Next events:"]
+        for ev in EVENTS:
+            horizon = max(now, parse_utc(ev["anchor"])) + timedelta(hours=ev["every_h"])
+            t = next(occurrences(ev, now, horizon))
+            ts = int(t.timestamp())
+            lines.append(f"{ev['emoji']} **{ev['name']}** — <t:{ts}:F> (<t:{ts}:R>)")
+        send("\n".join(lines))
+        return
+
     sent = load_sent()
     max_lead = timedelta(minutes=max(LEADS_MIN))
 
